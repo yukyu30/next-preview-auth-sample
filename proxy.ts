@@ -34,7 +34,7 @@ function renderForm(errorMessage = '') {
 </html>`,
     {
       status: 401,
-      headers: { 'Content-Type': 'text/html; charset=utf-8' },
+      headers: { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'private, no-store' },
     }
   )
 }
@@ -48,7 +48,7 @@ export async function proxy(request: NextRequest) {
   // 1. 認証済み Cookie のチェック
   const session = request.cookies.get(COOKIE_NAME)?.value
   if (session === btoa(PASSWORD)) {
-    return NextResponse.next()
+    return NextResponse.next({ headers: { 'Cache-Control': 'private, no-store' } })
   }
 
   // 2. パスワードフォーム（POST）の処理
@@ -58,6 +58,7 @@ export async function proxy(request: NextRequest) {
 
     if (inputPassword === PASSWORD) {
       const response = NextResponse.redirect(request.url, 303)
+      response.headers.set('Cache-Control', 'private, no-store')
       response.cookies.set(COOKIE_NAME, btoa(PASSWORD), {
         httpOnly: true,
         secure: true,
